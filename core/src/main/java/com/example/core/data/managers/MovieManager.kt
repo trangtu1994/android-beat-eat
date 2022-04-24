@@ -76,7 +76,6 @@ class MovieManager( // MovieRepository
     fun sortMovies(sorter: MovieSorter = MovieSorter.Name) : List<MutableMovie>
         = sortMovies(mutableMovies, sorter)
 
-
     fun favoriteFilter(isOnlyFavorite: Boolean) =
         mutableMovies.filter { if (isOnlyFavorite) it.isFavorite else false }
 

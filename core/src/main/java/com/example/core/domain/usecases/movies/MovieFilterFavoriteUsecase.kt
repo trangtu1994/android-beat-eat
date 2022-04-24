@@ -5,6 +5,10 @@ import com.example.core.data.models.movies.MutableMovie
 
 class MovieFilterFavoriteUsecase(val manager: MovieManager) {
 
-    operator fun invoke(movies:List<MutableMovie>, onlyFavorite: Boolean) : List<MutableMovie> =
-        manager.favoriteFilter(movies, onlyFavorite)
+    operator fun invoke(movies:List<MutableMovie>, onlyFavorite: Boolean) : List<MutableMovie> {
+//        manager.favoriteFilter(movies, onlyFavorite)
+        return mutableListOf()
+        //TODO: move movies into Manager
+
+    }
 }
