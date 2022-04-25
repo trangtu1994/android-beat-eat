@@ -1,4 +1,4 @@
-package com.example.beatoreat.prodframework.datasource
+package com.example.beatoreat.frameworks.prod
 
 import com.example.core.User
 import com.example.core.UserDataSoure

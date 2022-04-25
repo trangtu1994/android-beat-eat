@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/menu_filter"
         android:title="Only Favorite" />
-    <item android:id="@+id/menu_sorter"
-        android:title="Favorite" />
+    <item android:id="@+id/sorter_favorite"
+        android:title="Sort Favorite" />
+    <item android:id="@+id/sorter_name"
+        android:title="Sort Name" />
+    <item android:id="@+id/sorter_release"
+        android:title="Sort Release" />
+
 </menu>

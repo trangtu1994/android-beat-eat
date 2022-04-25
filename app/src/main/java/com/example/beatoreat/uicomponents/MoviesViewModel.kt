@@ -7,10 +7,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.beatoreat.database.AppDatabaseManager
 import com.example.beatoreat.framworks.stage.movie.LocalMovieDatasource
 import com.example.beatoreat.network.NetworkResult
-import com.example.beatoreat.stagingframework.datasource.RemoteMovieDatasource
-import com.example.core.data.managers.MovieManager
+import com.example.beatoreat.framworks.stage.movie.RemoteMovieDatasource
 import com.example.core.data.models.movies.MutableMovie
+import com.example.core.domain.filters.MovieConfig
 import com.example.core.domain.interactors.MovieInteractor
+import com.example.core.domain.sorters.MovieSorter
 import com.example.core.utils.ALogger
 import com.example.core.utils.AppLogConstants
 import kotlinx.coroutines.Dispatchers
@@ -19,13 +20,12 @@ import kotlinx.coroutines.withContext
 
 class MoviesViewModel: ViewModel() {
 
-    var sortFavorite: Boolean = false
-    var filterFavorite: Boolean = false
-
     private val movieInteractor: MovieInteractor
 
     val moviesResult: MutableLiveData<NetworkResult<List<MutableMovie>>> = MutableLiveData()
     val networkLoading: MutableLiveData<Boolean> = MutableLiveData(false)
+
+    private val pageConfig: MovieConfig = MovieConfig(1, false, MovieSorter.ReleaseDate)
 
     init {
         val localMovieDatasource = LocalMovieDatasource(AppDatabaseManager.instace!!.movieDao()!!)
@@ -37,7 +37,7 @@ class MoviesViewModel: ViewModel() {
     private fun initLocalMovies() {
         viewModelScope.launch(Dispatchers.IO) {
             val networkResult: NetworkResult<List<MutableMovie>> = try {
-                val results = movieInteractor.loadCachedUsecase()
+                val results = movieInteractor.loadCachedUsecase(pageConfig)
                 NetworkResult.ResponseResult(results, NetworkResult.ResutlState.Add)
             } catch (e: Exception) {
                 ALogger.eLog("${AppLogConstants.S_MOVIE} ==> ${e.localizedMessage}")
@@ -50,11 +50,11 @@ class MoviesViewModel: ViewModel() {
         }
     }
 
-    fun popularMovie(page: Int = 1) {
+    fun popularMovie() {
         networkLoading.value = true
         viewModelScope.launch(Dispatchers.IO) {
             val networkResult: NetworkResult<List<MutableMovie>> = try {
-                val results = movieInteractor.loadRemotePopularUsecae(page)
+                val results = movieInteractor.loadRemotePopularUsecae(pageConfig)
                 NetworkResult.ResponseResult(results, NetworkResult.ResutlState.Add)
             } catch (e: Exception) {
                 ALogger.eLog("${AppLogConstants.S_MOVIE} ==> ${e.localizedMessage}")
@@ -82,21 +82,18 @@ class MoviesViewModel: ViewModel() {
         }
     }
 
-    fun saveMovies() {
+    fun saveMovies() { // save movies to Database
         if (moviesResult.value is NetworkResult<List<MutableMovie>>) {
             val allValue = (moviesResult.value as NetworkResult.ResponseResult<List<MutableMovie>>).value
             localCacheMovies(allValue)
         }
     }
 
-
-    fun toggleSorter() {
+    fun toggleSorter(sorter: MovieSorter = MovieSorter.Name) {
         if (moviesResult.value is NetworkResult.ResponseResult<List<MutableMovie>>) {
-            sortFavorite = !sortFavorite
-            val allValue = (moviesResult.value as NetworkResult.ResponseResult<List<MutableMovie>>).value
-            val sorter = if (sortFavorite) MovieManager.MovieSorter.Favorite else MovieManager.MovieSorter.Name
+            pageConfig.sorter = sorter
             viewModelScope.launch {
-                val sortValues = movieInteractor.sortUsecase.invoke(allValue, sorter)
+                val sortValues = movieInteractor.sortUsecase(pageConfig)
                 moviesResult.value =  NetworkResult.ResponseResult(sortValues, NetworkResult.ResutlState.Add)
             }
         }
@@ -104,10 +101,9 @@ class MoviesViewModel: ViewModel() {
 
     fun toggleFavorite() {
         if (moviesResult.value is NetworkResult.ResponseResult<List<MutableMovie>>) {
-            filterFavorite = !filterFavorite
-            val allValue = (moviesResult.value as NetworkResult.ResponseResult<List<MutableMovie>>).value
-            val result = movieInteractor.favoriteFilterUsecase(allValue, filterFavorite)
-            moviesResult.value = NetworkResult.ResponseResult(result, NetworkResult.ResutlState.Add)
+            pageConfig.isFavorite = !pageConfig.isFavorite
+            val filterValues = movieInteractor.favoriteFilterUsecase(pageConfig)
+            moviesResult.value = NetworkResult.ResponseResult(filterValues, NetworkResult.ResutlState.Add)
         }
     }
 

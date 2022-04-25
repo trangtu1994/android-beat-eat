@@ -1,10 +1,12 @@
 package com.example.core.data.managers
 
 import com.example.core.data.datasources.MovieDataSource
-import com.example.core.data.datasources.SavedMovieDataSource
+import com.example.core.data.datasources.movie.LocalMovieDataSource
 import com.example.core.data.models.ILocalMovie
 import com.example.core.data.models.Movie
 import com.example.core.data.models.movies.MutableMovie
+import com.example.core.domain.filters.MovieConfig
+import com.example.core.domain.sorters.MovieSorter
 import com.example.core.utils.AppLogConstants
 import com.example.core.utils.ALogger
 import java.lang.Exception
@@ -13,30 +15,25 @@ import java.util.*
 
 class MovieManager( // MovieRepository
     private val movieDataSource: MovieDataSource,
-    private val localDataSource: SavedMovieDataSource? = null
+    private val localDataSource: LocalMovieDataSource? = null
 ) {
 
     private var mutableMovies = mutableListOf<MutableMovie>()
-    private var remoteMovies = mutableListOf<Movie>()
 
-    private fun retainItems(items: List<MutableMovie>, isClear: Boolean = false) {
-        if (isClear) {
-            mutableMovies.clear()
-        }
-        mutableMovies.addAll(items)
-    }
-
-    suspend fun getPopularMovie(page: Int): List<MutableMovie> {
+    suspend fun getPopularMovie(config: MovieConfig): List<MutableMovie> {
         val networkResult: MutableList<MutableMovie> = mutableListOf()
         try {
-            val listMovies = movieDataSource.getPopularMovie(page).results
-            val listMutableMovies = sortMovies(listMovies.map { getMutableMovie(it) }, MovieSorter.Name)
-            networkResult.addAll(listMutableMovies)
+            val listMovies = movieDataSource.getPopularMovie(config.page).results
+            val listMutableMovies = listMovies.map { getMutableMovie(it) }
+            retainMutableMovies(listMutableMovies, config.page == 1)
+            val filtered = applyConfigToList(config)
+            networkResult.addAll(filtered)
         } catch (e: UnknownHostException) {
             // do not reach host or connection is disable
-            ALogger.eLog("${AppLogConstants.S_MOVIE} ==> ${e.localizedMessage}")
-            val cachedBefore = loadCacheMovies()
-            cachedBefore?.let {
+
+                ALogger.eLog("${AppLogConstants.S_MOVIE} ==> ${e.localizedMessage}")
+            val cachedBefore = getLocalPopularMovies(config)
+            cachedBefore.let {
                 networkResult.addAll(it)
             }
             if (localDataSource == null) {
@@ -51,14 +48,27 @@ class MovieManager( // MovieRepository
         return networkResult
     }
 
-    suspend fun getLocalPopularMovie() : List<MutableMovie>? {
+    suspend fun getLocalPopularMovies(listConfig: MovieConfig) : List<MutableMovie> {
         val values = loadCacheMovies()
-        values?.let { retainItems(values) }
-        return values
+        values?.let { retainMutableMovies(values, listConfig.page == 1) }
+        return applyConfigToList(listConfig)
+    }
+
+    fun applyConfigToList(listConfig: MovieConfig) : List<MutableMovie> {
+        val currentItems = mutableMovies
+        val filtersList = favoriteFilter(currentItems, listConfig.isFavorite)
+        return sortMovies(filtersList, listConfig.sorter)
+    }
+
+    private fun retainMutableMovies(items: List<MutableMovie>, isClear: Boolean = false) {
+        if (isClear) {
+            mutableMovies.clear()
+        }
+        mutableMovies.addAll(items)
     }
 
     private suspend fun loadCacheMovies() : List<MutableMovie>? {
-        var result = localDataSource?.listAll()?.map { makeMutableMovie(it) }
+        var result = localDataSource?.listAll()?.map { localToMutableMovie(it) }
         if (result != null && result.isNotEmpty()) {
             result = sortMovies(result, MovieSorter.Name)
         }
@@ -67,19 +77,19 @@ class MovieManager( // MovieRepository
 
     private fun sortMovies(movies: List<MutableMovie>, sorter: MovieSorter): List<MutableMovie> {
         return when (sorter) {
-            MovieSorter.Release -> {mutableMovies.sortedBy { it.release_date }}
-            MovieSorter.Favorite -> {mutableMovies.sortedWith( compareBy({!it.isFavorite} , {it.title}))}
-            else -> {mutableMovies.sortedBy { it.title }}
+            MovieSorter.ReleaseDate -> {movies.sortedWith( compareByDescending<MutableMovie> { it.release_date }.thenBy { it.title  } )}
+            MovieSorter.Favorite -> {movies.sortedWith( compareBy({!it.isFavorite} , {it.title}))}
+            else -> {movies.sortedBy { it.title }}
         }
     }
 
-    fun sortMovies(sorter: MovieSorter = MovieSorter.Name) : List<MutableMovie>
-        = sortMovies(mutableMovies, sorter)
+    private fun favoriteFilter(
+        mutableMovies: List<MutableMovie>,
+        isOnlyFavorite: Boolean
+    ): List<MutableMovie> =
+         mutableMovies.filter { if (isOnlyFavorite) it.isFavorite else true }
 
-    fun favoriteFilter(isOnlyFavorite: Boolean) =
-        mutableMovies.filter { if (isOnlyFavorite) it.isFavorite else false }
-
-    private suspend fun cacheMovies(movies: List<MutableMovie>) {
+    suspend fun saveMovies(movies: List<MutableMovie>) {
         if (localDataSource == null) {
             return
         }
@@ -103,11 +113,7 @@ class MovieManager( // MovieRepository
         }
     }
 
-    suspend fun saveMovies(movies: List<MutableMovie>) {
-        cacheMovies(movies)
-    }
-
-    private fun makeMutableMovie(movie: Movie): MutableMovie =
+    private fun remoteToMutableMovie(movie: Movie): MutableMovie =
         movie.run {
             MutableMovie(
                 id,
@@ -120,7 +126,7 @@ class MovieManager( // MovieRepository
             )
         }
 
-    private fun makeMutableMovie(localMovie: ILocalMovie): MutableMovie =
+    private fun localToMutableMovie(localMovie: ILocalMovie): MutableMovie =
         localMovie.run {
             MutableMovie(
                 id,
@@ -133,20 +139,18 @@ class MovieManager( // MovieRepository
             )
         }
 
-    private suspend fun getMutableMovie(movie: Movie) : MutableMovie {
+   private suspend fun getMutableMovie(remoteMovie: Movie) : MutableMovie {
+        val mutableMovie = remoteToMutableMovie(remoteMovie)
         if (localDataSource == null) {
-            return makeMutableMovie(movie)
+            return mutableMovie
         }
-        return localDataSource.getById(movie.id)?.let { localMovie ->
-            makeMutableMovie(movie).apply {
+        return localDataSource.getById(remoteMovie.id)?.let { localMovie ->
+            mutableMovie.apply {
                 isFavorite = localMovie.isFavorite
             }
-        } ?: makeMutableMovie(movie)
+        } ?: mutableMovie
     }
 
-    enum class MovieSorter {
-        Name, Release, Favorite
-    }
 }
 
 

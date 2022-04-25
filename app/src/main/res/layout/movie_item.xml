@@ -10,37 +10,64 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
-        android:orientation="vertical"
+        android:orientation="horizontal"
+        android:gravity="center"
         android:padding="@dimen/tinyPadding">
 
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/imPoster"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_movies"
+            android:layout_marginEnd="@dimen/tinyPadding"/>
 
-            <ImageView
-                android:id="@+id/imPoster"
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_movies" />
+                android:text="Movie Name"
+                android:maxLines="2"
+                android:textSize="18sp"
+                android:layout_marginBottom="@dimen/tinyPadding"
+                android:textColor="@color/black" />
 
-            <ImageView
-                android:id="@+id/imFavorite"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="right"
-                android:src="@drawable/ic_favorite" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvOverview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Movie Name"
+                android:maxLines="3"
+                android:ellipsize="end"
+                android:layout_marginBottom="@dimen/tinyPadding"
+                android:textColor="@color/black" />
 
-        </FrameLayout>
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvRelease"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="Movie Name"
+                android:layout_marginBottom="@dimen/tinyPadding"
+                android:textSize="14sp"
+                android:textColor="@color/black" />
 
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/tvTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Movive Name"
-            android:textAlignment="center"
-            android:textColor="@color/black" />
+        </LinearLayout>
+
+
+        <ImageView
+            android:id="@+id/imFavorite"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="right"
+            android:src="@drawable/ic_favorite" />
 
     </LinearLayout>
+
 </LinearLayout>

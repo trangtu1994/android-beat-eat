@@ -1,4 +1,4 @@
-package com.example.beatoreat.framworks.stage
+package com.example.beatoreat.frameworks.stage
 
 import com.example.beatoreat.database.dao.UserDao
 import com.example.beatoreat.database.entities.UserDto

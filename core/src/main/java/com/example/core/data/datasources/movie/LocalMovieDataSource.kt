@@ -1,10 +1,9 @@
-package com.example.core.data.datasources
+package com.example.core.data.datasources.movie
 
 import com.example.core.data.models.ILocalMovie
-import com.example.core.data.models.Movie
 import com.example.core.data.models.movies.MutableMovie
 
-interface SavedMovieDataSource {
+interface LocalMovieDataSource {
 
     fun getLocalMovie(movie: MutableMovie) : ILocalMovie
 
@@ -14,8 +13,6 @@ interface SavedMovieDataSource {
 
     suspend fun getById(id: Int) : ILocalMovie?
 
-    suspend fun remove(movie: ILocalMovie) {}
-
     suspend fun update(movie: ILocalMovie) {}
 
     suspend fun insertAll(movies: List<ILocalMovie>) {
@@ -24,6 +21,7 @@ interface SavedMovieDataSource {
         }
     }
 
+    suspend fun remove(movie: ILocalMovie) {}
 
     /// convert from Movie to ILocalMovie
     fun convertMovie(movie: MutableMovie): ILocalMovie

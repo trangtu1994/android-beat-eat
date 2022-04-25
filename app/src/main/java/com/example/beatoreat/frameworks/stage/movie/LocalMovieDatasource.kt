@@ -2,16 +2,13 @@ package com.example.beatoreat.framworks.stage.movie
 
 import com.example.beatoreat.database.dao.MovieDao
 import com.example.beatoreat.database.entities.MovieDto
-import com.example.core.data.datasources.SavedMovieDataSource
+import com.example.core.data.datasources.movie.LocalMovieDataSource
 import com.example.core.data.models.ILocalMovie
-import com.example.core.data.models.Movie
 import com.example.core.data.models.movies.MutableMovie
 
-class LocalMovieDatasource(val dao: MovieDao): SavedMovieDataSource {
+class LocalMovieDatasource(val dao: MovieDao): LocalMovieDataSource {
 
-    override fun getLocalMovie(movie: MutableMovie): MovieDto {
-        TODO("Not yet implemented")
-    }
+
 
     override suspend fun listAll(): List<MovieDto> =
         dao.listAll()
@@ -39,4 +36,7 @@ class LocalMovieDatasource(val dao: MovieDao): SavedMovieDataSource {
     override fun convertMovie(movie: MutableMovie): MovieDto =
         movie.let { MovieDto(it.id, it.title, it.poster_path, it.overview, it.release_date.time, it.vote_count, false) }
 
+    override fun getLocalMovie(movie: MutableMovie): MovieDto {
+        TODO("Not yet implemented")
+    }
 }

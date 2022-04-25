@@ -7,10 +7,10 @@ import java.util.*
 // return by manager
 class MutableMovie (
     val id: Int,
-    val title: String,
-    val poster_path: String,
-    val overview: String,
-    val release_date: Date,
-    val vote_count: Long,
+    var title: String,
+    var poster_path: String,
+    var overview: String,
+    var release_date: Date,
+    var vote_count: Long,
     var isFavorite: Boolean = false
 )

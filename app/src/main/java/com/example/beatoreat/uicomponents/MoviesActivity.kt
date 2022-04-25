@@ -6,14 +6,13 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.beatoreat.R
 import com.example.beatoreat.databinding.ActivityMoviesBinding
 import com.example.beatoreat.network.NetworkResult
 import com.example.beatoreat.widget.MovieAdapter
-import com.example.core.data.models.Movie
 import com.example.core.data.models.movies.MutableMovie
+import com.example.core.domain.sorters.MovieSorter
 
 class MoviesActivity : AppCompatActivity() {
 
@@ -82,8 +81,12 @@ class MoviesActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.menu_sorter) {
-            viewModel.toggleSorter()
+        if (item.itemId == R.id.sorter_name) {
+            viewModel.toggleSorter(MovieSorter.Name)
+        } else if (item.itemId == R.id.sorter_favorite) {
+            viewModel.toggleSorter(MovieSorter.Favorite)
+        } else if (item.itemId == R.id.sorter_release) {
+            viewModel.toggleSorter(MovieSorter.ReleaseDate)
         } else if (item.itemId == R.id.menu_filter) {
             viewModel.toggleFavorite()
         }

@@ -1,4 +1,3 @@
 package com.example.beatoreat
 
-class BeatMainActivity : MainActivity() {
-}
+class BeatMainActivity : MainActivity() {}

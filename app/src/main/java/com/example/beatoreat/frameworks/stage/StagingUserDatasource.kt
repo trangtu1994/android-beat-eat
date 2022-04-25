@@ -1,4 +1,4 @@
-package com.example.beatoreat.stagingframework.datasource
+package com.example.beatoreat.frameworks.stage
 
 import com.example.core.User
 import com.example.core.UserDataSoure

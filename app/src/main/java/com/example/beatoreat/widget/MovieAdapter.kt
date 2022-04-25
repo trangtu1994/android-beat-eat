@@ -7,9 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.beatoreat.databinding.MovieItemBinding
+import com.example.beatoreat.network.NetworkConstant
 import com.example.core.data.models.Movie
 import com.example.core.data.models.movies.MutableMovie
 import com.squareup.picasso.Picasso
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MovieAdapter(val context: Context): RecyclerView.Adapter<MovieAdapter.MovieViewHolder>() {
 
@@ -49,11 +52,17 @@ class MovieAdapter(val context: Context): RecyclerView.Adapter<MovieAdapter.Movi
 
         fun bindMovie(data: MutableMovie) {
             this.data = data
-            val imageBase = "https://image.tmdb.org/t/p/w300/"
-            val imgUrl = "$imageBase${data.poster_path}"
+            val imgUrl = "${NetworkConstant.getPosterBase()}/${data.poster_path}"
             Picasso.get().load(imgUrl).into(binding.imPoster)
             binding.tvTitle.text = data.title
+            binding.tvOverview.text = data.overview
+            binding.tvRelease.text = getDateString(data.release_date, "dd - MM - yyyy")
             binding.imFavorite.isActivated = data.isFavorite
+        }
+
+        private fun getDateString(date: Date, format: String) : String {
+            val formater = SimpleDateFormat(format)
+            return formater.format(date)
         }
     }
 

@@ -1,7 +1,7 @@
 package com.example.core.domain.interactors
 
 import com.example.core.data.datasources.MovieDataSource
-import com.example.core.data.datasources.SavedMovieDataSource
+import com.example.core.data.datasources.movie.LocalMovieDataSource
 import com.example.core.data.managers.MovieManager
 import com.example.core.domain.usecases.MovieLoadPopularUsecase
 import com.example.core.domain.usecases.localcredential.MovieSaveLocalItemUsecase
@@ -10,7 +10,7 @@ import com.example.core.domain.usecases.movies.MovieLoadCachedUsecase
 import com.example.core.domain.usecases.movies.MovieSortingUsecase
 
 class MovieInteractor (remoteMovieDataSource: MovieDataSource,
-                        localMovieDataSource: SavedMovieDataSource? = null) {
+                        localMovieDataSource: LocalMovieDataSource? = null) {
 
     private val movieManager: MovieManager = MovieManager(remoteMovieDataSource, localMovieDataSource)
 

@@ -2,13 +2,11 @@ package com.example.core.domain.usecases.movies
 
 import com.example.core.data.managers.MovieManager
 import com.example.core.data.models.movies.MutableMovie
+import com.example.core.domain.filters.MovieConfig
 
 class MovieSortingUsecase(val manager: MovieManager) {
 
-    suspend operator fun invoke(movies: List<MutableMovie>, sorter: MovieManager.MovieSorter = MovieManager.MovieSorter.Name)
-    : List<MutableMovie> = mutableListOf()
-//        manager.sortMovies(movies, sorter)
-    //TODO: move movies into Manager
-
+    operator fun invoke(pageConfig: MovieConfig): List<MutableMovie>
+            = manager.applyConfigToList(pageConfig)
 
 }
